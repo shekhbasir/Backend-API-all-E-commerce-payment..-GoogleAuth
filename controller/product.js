@@ -1,6 +1,7 @@
 //here i am goig to making the api for all the product related jobs 
 const mongoose=require("mongoose")
 const ProductDatabase=require("../model/product")
+const Cartdatabase=require("../model/cart");
 const Hamaradd=async(req,res)=>{
   try {
     const {name,description,price,discountprice,discountpercentage,catogery,brand,stock,photo,rating,review,reviewcount}=req.body;
@@ -135,16 +136,133 @@ const Hamarsearch=async(req,res)=>{
 
 }
 
-const Hamarcart=async(req,res)=>{
+
+
+
+const Hamarcart = async (req, res) => {
   try {
-    //here i am going to writing the code for the adding the item in the cart 
-    const itemid=req.params.id;
+    const userId=req.userid;
+    const productId = req.params.id;
+
+    const product = await ProductDatabase.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    let hamdat = await Cartdatabase.findOne({ userId });
+
+    // agar cart nahi hai to naya banao
+    if (!hamdat) {
+      hamdat = new Cartdatabase({ userId, items: [], totalPrice: 0, totalItems: 0 });
+    }
+
+    // check product already in cart
+    const itemIndex = hamdat.items.findIndex(
+      item => item.productId.toString() === productId
+    );
+
+    if (itemIndex > -1) {
+      // already exists → quantity increase
+      hamdat.items[itemIndex].quantity += 1;
+    } else {
+      // new product → push
+      hamdat.items.push({
+        productId: productId,
+        quantity: 1,
+        price: product.price
+      });
+    }
+
+    // 🔄 recalculate totals
+    hamdat.totalItems = 0;
+    hamdat.totalPrice = 0;
+
+    hamdat.items.forEach(item => {
+      hamdat.totalItems += item.quantity;
+      hamdat.totalPrice += item.quantity * item.price;
+    });
+
+    await hamdat.save();
+
+    return res.status(200).json({
+      message: "Item added to cart",
+      hamdat
+    });
+
   } catch (error) {
-    
+    return res.status(500).json({
+      message: "Error in add to cart",
+      error
+    });
+  }
+};
+
+
+const findallitem=async(req,res)=>{
+  try {
+    const userId=req.userid;
+    const allval=await Cartdatabase.findOne({userId}).populate("items.productId");
+
+    if(allval.items.length===0){
+      return res.status(400).json({message:"Cart Is Empty ..!"})
+    }
+
+    const proid=await allval.items.productId;
+
+    return res.status(200).json({message:"the all cart item",allval});
+  } catch (error) {
+    return res.status(500).json({message:"Error from the findallitem"})
   }
 }
 
-module.exports={Hamaradd,Hamarupdate,Hamardelete,Hamarsabdata,Hamarsingle,Hamarsearch};
+const removeCartItem = async (req, res) => {
+  try {
+    const userId = req.userid;
+    const productId = req.params.productId;
+
+    const cart = await Cartdatabase.findOne({ userId });
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: "Cart is empty" });
+    }
+
+    const newItems = [];
+
+    for (let i = 0; i < cart.items.length; i++) {
+      if (cart.items[i].productId.toString() !== productId) {
+        newItems.push(cart.items[i]);
+      }
+    }
+
+    cart.items = newItems;
+
+    cart.totalItems = 0;
+    cart.totalPrice = 0;
+
+    for (let i = 0; i < cart.items.length; i++) {
+      cart.totalItems += cart.items[i].quantity;
+      cart.totalPrice += cart.items[i].quantity * cart.items[i].price;
+    }
+
+    await cart.save();
+
+    return res.status(200).json({
+      message: "Item deleted from cart",
+      cart
+    });
+
+  } catch (error) {
+    console.error("REMOVE CART ERROR:", error);
+    return res.status(500).json({
+      message: "Error deleting cart item",
+      error: error.message
+    });
+  }
+};
+
+module.exports={Hamaradd,Hamarupdate,Hamardelete,Hamarsabdata,Hamarsingle,Hamarsearch,Hamarcart,findallitem,removeCartItem};
 
 
-///here i am going to adding the new feature for cart
+//ab main simply jake apan akaam kar sakta huu and the data fetch 
+
+//i am goin to creating the task in which the 

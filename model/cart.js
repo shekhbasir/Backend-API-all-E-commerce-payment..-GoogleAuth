@@ -1,22 +1,45 @@
-//here i am going to wrting the code for the cart
-const mongoose=require('mongoose');
+// model/cart.js
+const mongoose = require("mongoose");
 
-
-const Hamarcartschema=new mongoose.Schema({
-  itemid:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"ProductDatabase"
+const CartItemSchema = new mongoose.Schema({
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ProductDatabase",
+    required: true
   },
-  totalitem:{
-    type:Number
+  quantity: {
+    type: Number,
+    default: 1,
+    min: 1
   },
-  totalprice:{
-    type:Number,
+  price: {
+    type: Number,
+    required: true
+  }
+});
+
+const CartSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+
+    items: [CartItemSchema],
+
+    totalPrice: {
+      type: Number,
+      default: 0
+    },
+
+    totalItems: {
+      type: Number,
+      default: 0
+    }
   },
+  { timestamps: true }
+);
 
-
-
-},{timestamps:true})
-
-const Cartdatabase=mongoose.model("Cartdatabase",Hamarcartschema)
-module.exports=Cartdatabase
+const Cartdatabase=mongoose.model("Cartdatabase",CartSchema);
+module.exports=Cartdatabase;

@@ -8,4 +8,5 @@ allauthroutes.post("/signup",Hamarsignup);
 allauthroutes.post("/login",Hamarlogin);
 allauthroutes.get("/logout",isauth,Hamarlogout);
 
+
 module.exports=allauthroutes;
