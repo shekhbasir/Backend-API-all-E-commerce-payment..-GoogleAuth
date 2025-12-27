@@ -82,9 +82,7 @@ const Hamarlogin=async(req,res)=>{
 const Hamarlogout=async(req,res)=>{
   try {
 
-    // if(!req.cookies.token){
-    //   return res.status(400).json({message:"first Login ...!"});
-    // }
+    
     res.clearCookie("token",{
       httpOnly:true,
       sameSite:"strict",

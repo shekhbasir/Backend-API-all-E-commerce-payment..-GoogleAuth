@@ -103,4 +103,48 @@ const Hamarsingle=async(req,res)=>{
   }
 
 }
-module.exports={Hamaradd,Hamarupdate,Hamardelete,Hamarsabdata,Hamarsingle};
+
+//here i am going to finding the searching api
+const Hamarsearch=async(req,res)=>{
+  try{
+    const {keyword}=req.query;
+    if(!keyword){
+      return res.status(400).json({message:"plz Enter Valid search Keyword"});
+    }
+
+    //now agar valid
+    const searchproduct=await ProductDatabase.find({
+      $or:[{name:{$regex:keyword,$options:"i"}},
+        {description:{$regex:keyword,$options:"i"}},
+        {brand:{$regex:keyword,$options:"i"}}
+      ]
+    });
+
+    //now ab check kar dehm
+    if(searchproduct.length===0){
+      return res.status(404).json({message:"Item Not Found ..!"})
+    }
+
+    return res.status(200).json({message:"Your Items ",searchproduct})
+
+
+
+  }catch(error){
+    return res.status(500).json({message:"error from the Searching api"})
+  }
+
+}
+
+const Hamarcart=async(req,res)=>{
+  try {
+    //here i am going to writing the code for the adding the item in the cart 
+    const itemid=req.params.id;
+  } catch (error) {
+    
+  }
+}
+
+module.exports={Hamaradd,Hamarupdate,Hamardelete,Hamarsabdata,Hamarsingle,Hamarsearch};
+
+
+///here i am going to adding the new feature for cart
