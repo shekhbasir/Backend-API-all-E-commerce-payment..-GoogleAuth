@@ -262,7 +262,3 @@ const removeCartItem = async (req, res) => {
 
 module.exports={Hamaradd,Hamarupdate,Hamardelete,Hamarsabdata,Hamarsingle,Hamarsearch,Hamarcart,findallitem,removeCartItem};
 
-
-//ab main simply jake apan akaam kar sakta huu and the data fetch 
-
-//i am goin to creating the task in which the 
